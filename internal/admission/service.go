@@ -45,6 +45,16 @@ func (s *Service) RemovePlan(chamberID string, plan model.ConvoyPlan) []QueueEnt
 	return s.controller.queue.RemovePlan(chamberID, plan.ID)
 }
 
+// MovePlan relocates a plan's queued vessels between chambers atomically.
+func (s *Service) MovePlan(sourceChamberID, targetChamberID string, plan model.ConvoyPlan) ([]QueueMove, bool) {
+	return s.controller.queue.MovePlan(sourceChamberID, targetChamberID, plan.ID)
+}
+
+// UndoMove reverses a MovePlan after a downstream step (e.g. journaling) fails.
+func (s *Service) UndoMove(targetChamberID, sourceChamberID string, moves []QueueMove) {
+	s.controller.queue.UndoMove(targetChamberID, sourceChamberID, moves)
+}
+
 func (s *Service) Restore(chamberID string, entries []QueueEntry) {
 	s.controller.queue.Restore(chamberID, entries)
 }

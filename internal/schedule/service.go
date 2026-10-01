@@ -38,6 +38,10 @@ func (s *Service) Cancel(ctx context.Context, planID uuid.UUID, note string, pub
 	return s.planner.Cancel(ctx, planID, note, s.publisher, publication)
 }
 
+func (s *Service) Migrate(ctx context.Context, planID uuid.UUID, targetChamberID string, checks MigrationChecks) (Migration, error) {
+	return s.planner.Migrate(ctx, planID, targetChamberID, checks)
+}
+
 func (s *Service) Active(chamberID string) []model.ConvoyPlan {
 	return s.planner.Active(chamberID)
 }
