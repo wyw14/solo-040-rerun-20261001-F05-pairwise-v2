@@ -2,6 +2,7 @@ package admission
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/wyw14/cry-96/internal/journal"
@@ -43,6 +44,29 @@ func (s *Service) Admit(ctx context.Context, cycle model.TransitCycle) (Decision
 
 func (s *Service) RemovePlan(chamberID string, plan model.ConvoyPlan) []QueueEntry {
 	return s.controller.queue.RemovePlan(chamberID, plan.ID)
+}
+
+// RelocatePlan moves every queued vessel of a plan to another chamber as one
+// atomic queue operation and records the queue change.
+func (s *Service) RelocatePlan(ctx context.Context, fromChamber, toChamber string, plan model.ConvoyPlan) ([]QueueEntry, int, int, error) {
+	entries, fromIndex, toIndex, moved := s.controller.queue.RelocatePlan(fromChamber, toChamber, plan.ID)
+	if !moved {
+		return nil, -1, -1, errors.New("plan has no queued vessels to migrate")
+	}
+	_, err := s.recorder.Record(ctx, toChamber, model.EventPlanMigrated, plan.ID, 0, map[string]any{
+		"plan_id": plan.ID, "from_chamber": fromChamber, "to_chamber": toChamber,
+		"vessels": len(entries), "from_index": fromIndex, "to_index": toIndex, "at": s.now().UTC(),
+	})
+	if err != nil {
+		s.controller.queue.RestoreRelocation(fromChamber, toChamber, plan.ID, fromIndex, entries)
+		return nil, -1, -1, err
+	}
+	return entries, fromIndex, toIndex, nil
+}
+
+// RestoreRelocation reverses a previously applied queue relocation.
+func (s *Service) RestoreRelocation(fromChamber, toChamber string, plan model.ConvoyPlan, fromIndex int, entries []QueueEntry) {
+	s.controller.queue.RestoreRelocation(fromChamber, toChamber, plan.ID, fromIndex, entries)
 }
 
 func (s *Service) Restore(chamberID string, entries []QueueEntry) {

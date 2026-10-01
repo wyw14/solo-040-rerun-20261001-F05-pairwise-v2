@@ -16,9 +16,12 @@ import (
 // Planner owns convoy plans and their admission queue membership.
 type Planner struct {
 	mu        sync.RWMutex
+	migrateMu sync.Mutex
 	plans     map[uuid.UUID]model.ConvoyPlan
 	admission *admission.Service
 	recorder  *journal.Recorder
+	guard     MigrationGuard
+	chambers  []string
 	now       func() time.Time
 }
 

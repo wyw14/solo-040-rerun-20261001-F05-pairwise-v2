@@ -79,6 +79,26 @@ func (c *Coordinator) Cancel(ctx context.Context, chamberID, reason string) (mod
 	return cycleValue, err
 }
 
+// CancelPlannedCycleForPlan closes the not-yet-started transit that still
+// references a migrated plan. It is a no-op when the chamber's current transit
+// belongs to another plan or has already progressed past planning.
+func (c *Coordinator) CancelPlannedCycleForPlan(ctx context.Context, chamberID string, planID uuid.UUID, reason string) error {
+	c.mu.Lock()
+	cycleValue, ok := c.current[chamberID]
+	if !ok || cycleValue.Stage != model.StagePlanned || cycleValue.PlanID != planID {
+		c.mu.Unlock()
+		return nil
+	}
+	if err := cycleValue.Advance(model.StageCancelled, reason, c.now()); err != nil {
+		c.mu.Unlock()
+		return err
+	}
+	c.current[chamberID] = cycleValue
+	c.mu.Unlock()
+	_, err := c.recorder.Record(ctx, chamberID, model.EventCycleAdvanced, cycleValue.ID, cycleValue.Generation, cycleValue)
+	return err
+}
+
 func (c *Coordinator) ApplyGateAck(ctx context.Context, ack model.DeviceAck) error {
 	command, err := c.gates.Confirm(ctx, ack)
 	if err != nil {

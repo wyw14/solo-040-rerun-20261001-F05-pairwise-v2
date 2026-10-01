@@ -12,7 +12,16 @@
       <div class="message" id="plan-message"></div>
     </form></section>
     <section class="panel"><h2>Current transit</h2><div class="metrics"><div class="metric">Chamber<strong id="metric-chamber">-</strong></div><div class="metric">Stage<strong id="metric-stage">-</strong></div><div class="metric">Cycle<strong id="metric-cycle">-</strong></div></div></section>
-    <section class="panel wide"><h2>Active plans</h2><table><thead><tr><th>Chamber</th><th>Plan</th><th>Direction</th><th>Vessels</th><th>Created</th></tr></thead><tbody id="plans"></tbody></table></section>
+    <section class="panel wide"><h2>Active plans</h2><table><thead><tr><th>Chamber</th><th>Plan</th><th>Direction</th><th>Vessels</th><th>Queue position</th><th>Created</th><th></th></tr></thead><tbody id="plans"></tbody></table></section>
+    <section class="panel wide"><h2>Migrate convoy plan</h2><div class="muted">Move a convoy that has not started to another chamber when its chamber is decommissioned. Plans with published signals or vessels already in the lock cannot migrate.</div>
+      <form id="migrate-form" style="margin-top:12px"><div class="form-row">
+        <div><label for="migrate-plan">Plan</label><select id="migrate-plan"></select></div>
+        <div><label for="migrate-target">Target chamber</label><select id="migrate-target"></select></div>
+        <div><label>&nbsp;</label><button type="submit" class="danger">Migrate plan</button></div>
+      </div></form>
+      <div class="message" id="migrate-message"></div>
+      <div id="migrate-result"></div>
+    </section>
   </div>
 </main><script src="/assets/app.js"></script><script src="/assets/operations.js"></script>
 </body></html>

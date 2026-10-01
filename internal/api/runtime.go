@@ -69,6 +69,7 @@ func NewRuntime(ctx context.Context, dataDirectory string) (*Runtime, error) {
 	leaseSweeper := lease.NewSweeper(leaseRegistry, now)
 	planner := schedule.NewPlanner(admissionService, recorder, now)
 	scheduleService := schedule.NewService(planner, signalPublisher)
+	planner.BindChambers(chambers)
 	ramp := hydraulics.NewRamp(25*time.Millisecond, now)
 	hydraulicsController := hydraulics.NewController(gateCommands, recorder, ramp, now)
 	barrier := safety.NewBarrier()
@@ -106,7 +107,7 @@ func NewRuntime(ctx context.Context, dataDirectory string) (*Runtime, error) {
 			health.Observe(chamberID, device, true, "telemetry current", now())
 		}
 	}
-	return &Runtime{
+	rt := &Runtime{
 		Store: store, Recorder: recorder, GateState: gateState,
 		GateCommands: gateCommands, Gates: gateController,
 		SignalStore: signalStore, SignalPublisher: signalPublisher, Signals: signalService,
@@ -117,5 +118,7 @@ func NewRuntime(ctx context.Context, dataDirectory string) (*Runtime, error) {
 		Snapshot:  monitor.NewSnapshot(cycleCoordinator, gateState, admissionService, signalService, safetyService, now),
 		Incidents: monitor.NewIncidentReview(store), Health: health, Recovery: recovery,
 		Chambers: chambers, Now: now,
-	}, nil
+	}
+	planner.BindMigrationGuard(&migrationGuard{runtime: rt})
+	return rt, nil
 }

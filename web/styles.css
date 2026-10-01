@@ -53,6 +53,13 @@ th { color: #91a0a8; font-weight: 600; }
 .status.warning::before { background: #f2c14e; }
 .status.critical::before { background: #ef6f6c; }
 .message { min-height: 22px; color: #f2c14e; font-size: 13px; margin-top: 10px; white-space: pre-wrap; }
+.result-banner { padding: 10px 12px; border-radius: 4px; font-size: 14px; margin: 12px 0 4px; }
+.result-banner.ok { background: #1f4d3a; border: 1px solid #3fae7a; color: #cdeede; }
+.result-banner.fail { background: #5c2a2a; border: 1px solid #ef6f6c; color: #f6d6d5; }
+.result-title { font-size: 13px; color: #91a0a8; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .04em; }
+tr.check-failed td { color: #f2a6a3; }
+.arrow { color: #5bc0be; text-align: center; }
+td button, .migrate-use { min-height: 30px; padding: 4px 10px; }
 @media (max-width: 780px) {
   header { height: auto; padding: 14px 18px; align-items: flex-start; flex-direction: column; gap: 10px; }
   main { padding: 20px 16px 40px; }
